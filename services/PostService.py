@@ -47,3 +47,19 @@ def get_post_task(session, post_id, cookies):
     url = post_base + endpoint
     return asyncio.create_task(session.get(url, cookies=cookies, ssl=False))
 
+
+def get_detail_user_id_set(post_list):
+    res = set()
+    for post in post_list:
+        res.add(post['user_id'])
+        if 'comments' in post_list:
+            comment_list = post_list['comments']
+            for comment in comment_list:
+                res.add(comment['user_id'])
+                if 'responses' in comment:
+                    response_list = comment['responses']
+                    for rsp in response_list:
+                        res.add(rsp['user_id'])
+    return res
+
+

@@ -20,7 +20,8 @@ def get_all_posts(cookies):
     try:
         post_list = PostService.get_all(cookies)
         user_set = PostService.get_user_id_set(post_list)
-        user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'], cookies)
+        user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
+                                                                        cookies)
         user_dict = UserService.transform_user_list_to_dict(user_list)
         transform_all_posts(post_list, user_dict)
     except Exception as e:
@@ -39,9 +40,11 @@ def get_post_detail(user_id, post_id, cookies):
         asyncio.run(async_get_post_info_and_bookmark(resp_list, user_id, post_id, cookies))
         post_list = resp_list[0]
         post_list[0]['is_bookmarked'] = len(resp_list[1]) == 1
-        user_id = post_list[0]['user_id']
-        user_dict = UserService.get_user_info_by_id_and_field_list(user_id, ['user_id', 'nickname'], cookies=cookies)
-        transform_all_posts(post_list, user_dict)
+        user_set = PostService.get_detail_user_id_set(post_list)
+        user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
+                                                                        cookies)
+        user_dict = UserService.transform_user_list_to_dict(user_list)
+        transform_detail_post(post_list, user_dict)
     except Exception as e:
         return ResultUtil.fail(str(e))
     return ResultUtil.succeed(post_list)
@@ -88,3 +91,23 @@ def transform_all_posts(post_list, user_dict):
         user_id = post['user_id']
         if user_id in user_dict:
             post['nickname'] = user_dict[user_id]['nickname']
+
+
+def transform_detail_post(post_list, user_dict):
+    post = post_list[0]
+    curr_id = post['user_id']
+    if curr_id in user_dict:
+        post['nickname'] = user_dict[curr_id]['nickname']
+    if 'comments' in post:
+        comment_list = post['comments']
+        for comment in comment_list:
+            curr_id = comment['user_id']
+            if curr_id in user_dict:
+                comment['nickname'] = user_dict[curr_id]['nickname']
+            if 'responses' in comment:
+                rsp_list = comment['responses']
+                for rsp in rsp_list:
+                    curr_id = rsp['user_id']
+                    if curr_id in user_dict:
+                        rsp['nickname'] = user_dict[curr_id]['nickname']
+
