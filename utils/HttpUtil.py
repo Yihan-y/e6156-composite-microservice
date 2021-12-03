@@ -19,7 +19,7 @@ def get_call(url, endpoint, params=None, cookies=None):
 
 def post_call(url, endpoint, data, cookies=None):
     try:
-        r = requests.post(url + endpoint, data, cookies=cookies)
+        r = requests.post(url + endpoint, json=data, cookies=cookies)
         if r.status_code >= 300:
             raise Exception("return status code: " + str(r.status_code) + " detail: " + r.text)
     except Exception as e:
@@ -29,7 +29,7 @@ def post_call(url, endpoint, data, cookies=None):
 
 def put_call(url, endpoint, data, cookies=None):
     try:
-        r = requests.put(url + endpoint, data, cookies=cookies)
+        r = requests.put(url + endpoint, json=data, cookies=cookies)
         if r.status_code >= 300:
             raise Exception("return status code: " + str(r.status_code) + " detail: " + r.text)
     except Exception as e:
