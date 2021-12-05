@@ -90,7 +90,11 @@ def create_post():
     data = request.get_json()
     user_id = g.user_id
     res = PostUserService.create_post(user_id, data, cookies=request.cookies)
-    return jsonify(res), res['code']
+    post_id = data['post_id']
+    response = jsonify(res)
+    response.headers.set('Location', f"/api/postinfo/{post_id}")
+    response.headers.add('Access-Control-Expose-Headers', 'Location')
+    return response, res['code']
 
 
 @app.route('/api/postinfo/<post_id>', methods=['GET'])
