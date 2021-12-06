@@ -12,27 +12,27 @@ post_base = settings.Base.POST_URL
 
 
 # /api/posts returns list
-def get_all(cookies):
+def get_all(headers):
     endpoint = '/api/posts'
-    res = HttpUtil.get_call(post_base, endpoint, cookies=cookies)
+    res = HttpUtil.get_call(post_base, endpoint, headers=headers)
     return res
 
 
 # /api/posts/<post_id> returns list
-def get_post(post_id, cookies):
+def get_post(post_id, headers):
     endpoint = '/api/posts/' + post_id
-    res = HttpUtil.get_call(post_base, endpoint, cookies=cookies)
+    res = HttpUtil.get_call(post_base, endpoint, headers=headers)
     return res
 
 
-def put_post(post_id, data, cookies):
+def put_post(post_id, data, headers):
     endpoint = "/api/posts/" + post_id
-    HttpUtil.put_call(post_base, endpoint, data, cookies)
+    HttpUtil.put_call(post_base, endpoint, data, headers)
 
 
-def create_post(data, cookies):
+def create_post(data, headers):
     endpoint = '/api/posts'
-    HttpUtil.post_call(post_base, endpoint, data, cookies)
+    HttpUtil.post_call(post_base, endpoint, data, headers)
 
 
 def get_user_id_set(post_list):
@@ -42,10 +42,10 @@ def get_user_id_set(post_list):
     return res
 
 
-def get_post_task(session, post_id, cookies):
+def get_post_task(session, post_id, headers):
     endpoint = '/api/posts/' + post_id
     url = post_base + endpoint
-    return asyncio.create_task(session.get(url, cookies=cookies, ssl=False))
+    return asyncio.create_task(session.get(url, headers=headers, ssl=False))
 
 
 def get_detail_user_id_set(post_list):
