@@ -61,7 +61,9 @@ def home():
 
 @app.route('/api/postinfo', methods=['GET'])
 def get_all_posts():
-    res = PostUserService.get_all_posts(cookies=request.cookies)
+    id_token = request.headers.get('id_token')
+    headers = {'id_token': id_token}
+    res = PostUserService.get_all_posts(headers=headers)
     return jsonify(res), res['code']
 
 
@@ -70,7 +72,9 @@ def get_all_posts():
 def create_post():
     data = request.get_json()
     user_id = g.user_id
-    res = PostUserService.create_post(user_id, data, cookies=request.cookies)
+    id_token = request.headers.get('id_token')
+    headers = {'id_token': id_token}
+    res = PostUserService.create_post(user_id, data, headers=headers)
     post_id = data['post_id']
     response = jsonify(res)
     response.headers.set('Location', f"/api/postinfo/{post_id}")
@@ -81,7 +85,9 @@ def create_post():
 @app.route('/api/postinfo/<post_id>', methods=['GET'])
 def get_post(post_id):
     user_id = g.user_id
-    res = PostUserService.get_post_detail(user_id, post_id, cookies=request.cookies)
+    id_token = request.headers.get('id_token')
+    headers = {'id_token': id_token}
+    res = PostUserService.get_post_detail(user_id, post_id, headers=headers)
     return jsonify(res), res['code']
 
 
@@ -89,7 +95,9 @@ def get_post(post_id):
 def put_post(post_id):
     data = request.get_json()
     user_id = g.user_id
-    res = PostUserService.update_post_detail(user_id, post_id, data, cookies=request.cookies)
+    id_token = request.headers.get('id_token')
+    headers = {'id_token': id_token}
+    res = PostUserService.update_post_detail(user_id, post_id, data, headers=headers)
     return jsonify(res), res['code']
 
 
