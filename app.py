@@ -62,8 +62,12 @@ def home():
 @app.route('/api/postinfo', methods=['GET'])
 def get_all_posts():
     id_token = request.headers.get('id_token')
+    params = request.args
+    sort_by = params.get('sortby', None)
+    offset = params.get('offset', None)
+    limit = params.get('limit', None)
     headers = {'id_token': id_token}
-    res = PostUserService.get_all_posts(headers=headers)
+    res = PostUserService.get_all_posts(headers, offset, limit, sort_by)
     return jsonify(res), res['code']
 
 
@@ -98,6 +102,14 @@ def put_post(post_id):
     id_token = request.headers.get('id_token')
     headers = {'id_token': id_token}
     res = PostUserService.update_post_detail(user_id, post_id, data, headers=headers)
+    return jsonify(res), res['code']
+
+
+@app.route('/api/userprofile/<user_id>', methods=['GET'])
+def get_user(user_id):
+    id_token = request.headers.get('id_token')
+    headers = {'id_token': id_token}
+    res = PostUserService.get_user_profile(user_id, headers)
     return jsonify(res), res['code']
 
 

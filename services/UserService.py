@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from utils import HttpUtil
@@ -49,3 +50,14 @@ def transform_user_list_to_dict(user_list):
     for user in user_list:
         res[user['user_id']] = user
     return res
+
+
+def get_user_info_task(session, user_id, headers):
+    endpoint = '/api/users/' + user_id
+    url = user_base + endpoint
+    return asyncio.create_task(session.get(url, headers=headers, ssl=False))
+
+
+def get_address_info(address_id, headers):
+    endpoint = '/api/addresses/' + address_id
+    return HttpUtil.get_call(user_base, endpoint, headers=headers)

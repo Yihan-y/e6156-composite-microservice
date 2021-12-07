@@ -16,9 +16,9 @@ logger.setLevel(logging.INFO)
 # 3. make user_id a set
 # 4. user service get nickname by user_id set
 # 5. add nickname under the corresponding user_id in post data
-def get_all_posts(headers):
+def get_all_posts(headers, offset, limit, order_by):
     try:
-        post_list = PostService.get_all(headers)
+        post_list = PostService.get_all(headers, offset, limit, order_by)
         user_set = PostService.get_user_id_set(post_list)
         user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
                                                                         headers)
@@ -50,6 +50,26 @@ def get_post_detail(user_id, post_id, headers):
     return ResultUtil.succeed(post_list)
 
 
+# 1. async user service get user info and bookmark service get bookmarked post_id
+# 2. user service get address info by address id from thr first rsp
+# 3. assemble the data
+def get_user_profile(user_id, headers):
+    try:
+        rsp_list = []
+        asyncio.run(async_get_user_info_and_bookmark(rsp_list, user_id, headers))
+        res = rsp_list[0][0]
+        bookmarks = rsp_list[1]
+        res['bookmarks'] = bookmarks
+        addr_id = res['addr_id']
+        if addr_id is None:
+            res['addr_info'] = None
+        else:
+            res['addr_info'] = UserService.get_address_info(addr_id, headers)
+    except Exception as e:
+        return ResultUtil.fail(str(e))
+    return ResultUtil.succeed(res)
+
+
 def update_post_detail(user_id, post_id, data, headers):
     try:
         post_list = PostService.get_post(post_id, headers=headers)
@@ -72,18 +92,32 @@ def create_post(user_id, data, headers):
     return ResultUtil.succeed(code=201)
 
 
-def parallel_task(session, user_id, post_id, headers):
+def parallel_post_user_task(session, user_id, post_id, headers):
     post_coro = PostService.get_post_task(session, post_id, headers=headers)
     bookmark_coro = BookmarkService.is_bookmarked_task(session, user_id, post_id, headers=headers)
     return [post_coro, bookmark_coro]
 
 
+def parallel_user_bookmark_task(session, user_id, headers):
+    user_coro = UserService.get_user_info_task(session, user_id, headers)
+    bookmark_coro = BookmarkService.bookmark_by_user_id_task(session, user_id, headers)
+    return [user_coro, bookmark_coro]
+
+
 async def async_get_post_info_and_bookmark(resp_list, user_id, post_id, headers):
     async with aiohttp.ClientSession() as session:
-        tasks = parallel_task(session, user_id, post_id, headers)
+        tasks = parallel_post_user_task(session, user_id, post_id, headers)
         responses = await asyncio.gather(*tasks)
         for resp in responses:
             resp_list.append(await resp.json())
+
+
+async def async_get_user_info_and_bookmark(rsp_list, user_id, headers):
+    async with aiohttp.ClientSession() as session:
+        tasks = parallel_user_bookmark_task(session, user_id, headers)
+        responses = await asyncio.gather(*tasks)
+        for rsp in responses:
+            rsp_list.append(await rsp.json())
 
 
 def transform_all_posts(post_list, user_dict):

@@ -12,9 +12,16 @@ post_base = settings.Base.POST_URL
 
 
 # /api/posts returns list
-def get_all(headers):
+def get_all(headers, offset, limit, sort_by):
     endpoint = '/api/posts'
-    res = HttpUtil.get_call(post_base, endpoint, headers=headers)
+    params = {}
+    if offset is not None:
+        params['offset'] = offset
+    if limit is not None:
+        params['limit'] = limit
+    if sort_by is not None:
+        params['sort_by'] = sort_by
+    res = HttpUtil.get_call(post_base, endpoint, params, headers=headers)
     return res
 
 
