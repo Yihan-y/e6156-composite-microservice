@@ -63,11 +63,11 @@ def home():
 def get_all_posts():
     id_token = request.headers.get('id_token')
     params = request.args
-    sort_by = params.get('sortby', None)
+    order_by = params.get('orderby', None)
     offset = params.get('offset', None)
     limit = params.get('limit', None)
     headers = {'id_token': id_token}
-    res = PostUserService.get_all_posts(headers, offset, limit, sort_by)
+    res = PostUserService.get_all_posts(headers, offset, limit, order_by)
     return jsonify(res), res['code']
 
 

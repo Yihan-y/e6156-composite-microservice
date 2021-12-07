@@ -57,14 +57,27 @@ def get_user_profile(user_id, headers):
     try:
         rsp_list = []
         asyncio.run(async_get_user_info_and_bookmark(rsp_list, user_id, headers))
+        # address info
         res = rsp_list[0][0]
-        bookmarks = rsp_list[1]
-        res['bookmarks'] = bookmarks
         addr_id = res['addr_id']
         if addr_id is None:
-            res['addr_info'] = None
+            res['addr_info'] = {}
         else:
             res['addr_info'] = UserService.get_address_info(addr_id, headers)
+        del res['addr_id']
+        del res['links']
+        # bookmark list
+        bookmark_list = rsp_list[1]
+        post_id_list = []
+        for bookmark in bookmark_list:
+            post_id_list.append(bookmark['post_id'])
+        post_list = PostService.get_post_list(post_id_list, headers)
+        user_set = PostService.get_user_id_set(post_list)
+        user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
+                                                                        headers)
+        user_dict = UserService.transform_user_list_to_dict(user_list)
+        transform_all_posts(post_list, user_dict)
+        res['bookmark_info'] = post_list
     except Exception as e:
         return ResultUtil.fail(str(e))
     return ResultUtil.succeed(res)
@@ -123,25 +136,23 @@ async def async_get_user_info_and_bookmark(rsp_list, user_id, headers):
 def transform_all_posts(post_list, user_dict):
     for post in post_list:
         user_id = post['user_id']
-        if user_id in user_dict:
-            post['nickname'] = user_dict[user_id]['nickname']
+        post['nickname'] = user_dict[user_id]['nickname'] if user_id in user_dict else 'user no longer exists'
 
 
 def transform_detail_post(post_list, user_dict):
     post = post_list[0]
     curr_id = post['user_id']
-    if curr_id in user_dict:
-        post['nickname'] = user_dict[curr_id]['nickname']
+    post['nickname'] = user_dict[curr_id]['nickname'] if curr_id in user_dict else 'user no longer exists'
     if 'comments' in post:
         comment_list = post['comments']
         for comment in comment_list:
             curr_id = comment['user_id']
-            if curr_id in user_dict:
-                comment['nickname'] = user_dict[curr_id]['nickname']
+            comment['nickname'] = user_dict[curr_id]['nickname'] if curr_id in user_dict else 'user no longer exists'
             if 'responses' in comment:
                 rsp_list = comment['responses']
                 for rsp in rsp_list:
                     curr_id = rsp['user_id']
-                    if curr_id in user_dict:
-                        rsp['nickname'] = user_dict[curr_id]['nickname']
+                    rsp['nickname'] = user_dict[curr_id]['nickname'] if curr_id in user_dict \
+                        else 'user no longer exists'
+
 
