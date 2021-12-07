@@ -105,8 +105,9 @@ def put_post(post_id):
     return jsonify(res), res['code']
 
 
-@app.route('/api/userprofile/<user_id>', methods=['GET'])
-def get_user(user_id):
+@app.route('/api/userprofile', methods=['GET'])
+def get_user():
+    user_id = request.args.get('user_id', g.user_id)
     id_token = request.headers.get('id_token')
     headers = {'id_token': id_token}
     res = PostUserService.get_user_profile(user_id, headers)
