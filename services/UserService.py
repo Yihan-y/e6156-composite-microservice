@@ -68,4 +68,4 @@ def get_address_info(address_id, headers):
             'zip_code': None
         }
     endpoint = '/api/addresses/' + address_id
-    return HttpUtil.get_call(user_base, endpoint, headers=headers)
+    return HttpUtil.get_call(user_base, endpoint, headers=headers)[0]

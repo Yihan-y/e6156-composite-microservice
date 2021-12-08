@@ -80,8 +80,8 @@ def get_detail_user_id_set(post_list):
     res = set()
     for post in post_list:
         res.add(post['user_id'])
-        if 'comments' in post_list:
-            comment_list = post_list['comments']
+        if 'comments' in post:
+            comment_list = post['comments']
             for comment in comment_list:
                 res.add(comment['user_id'])
                 if 'responses' in comment:
