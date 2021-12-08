@@ -60,10 +60,7 @@ def get_user_profile(user_id, headers):
         # address info
         res = rsp_list[0][0]
         addr_id = res['addr_id']
-        if addr_id is None:
-            res['addr_info'] = {}
-        else:
-            res['addr_info'] = UserService.get_address_info(addr_id, headers)
+        res['addr_info'] = UserService.get_address_info(addr_id, headers)
         del res['addr_id']
         del res['links']
         # bookmark list
@@ -71,13 +68,16 @@ def get_user_profile(user_id, headers):
         post_id_list = []
         for bookmark in bookmark_list:
             post_id_list.append(bookmark['post_id'])
-        post_list = PostService.get_post_list(post_id_list, headers)
-        user_set = PostService.get_user_id_set(post_list)
-        user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
-                                                                        headers)
-        user_dict = UserService.transform_user_list_to_dict(user_list)
-        transform_all_posts(post_list, user_dict)
-        res['bookmark_info'] = post_list
+        if len(post_id_list) == 0:
+            res['bookmark_info'] = []
+        else:
+            post_list = PostService.get_post_list(post_id_list, headers)
+            user_set = PostService.get_user_id_set(post_list)
+            user_list = UserService.get_user_info_by_id_list_and_field_list(list(user_set), ['user_id', 'nickname'],
+                                                                            headers)
+            user_dict = UserService.transform_user_list_to_dict(user_list)
+            transform_all_posts(post_list, user_dict)
+            res['bookmark_info'] = post_list
     except Exception as e:
         return ResultUtil.fail(str(e))
     return ResultUtil.succeed(res)

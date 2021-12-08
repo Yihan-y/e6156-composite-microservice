@@ -59,5 +59,13 @@ def get_user_info_task(session, user_id, headers):
 
 
 def get_address_info(address_id, headers):
+    if address_id is None:
+        return {
+            'state': None,
+            'city': None,
+            'street_line_1': None,
+            'street_line_2': None,
+            'zip_code': None
+        }
     endpoint = '/api/addresses/' + address_id
     return HttpUtil.get_call(user_base, endpoint, headers=headers)

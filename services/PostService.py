@@ -34,7 +34,7 @@ def get_post(post_id, headers):
 
 def get_post_list(post_list, headers):
     endpoint = '/api/posts'
-    params = {'user_id': ','.join(post_list)}
+    params = {'ids': '.'.join(post_list)}
     res = HttpUtil.get_call(post_base, endpoint, params=params, headers=headers)
     return res['data']
 
